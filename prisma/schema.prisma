@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(cuid())
+  email     String    @unique
+  password  String
+  name      String?
+  phone     String?
+  role      UserRole  @default(CUSTOMER)
+  active    Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  bookings  Booking[]
+  turfs     Turf[]    @relation("OwnerTurfs")
+}
+
+model Turf {
+  id           String     @id @default(cuid())
+  name         String
+  location     String
+  pricePerHour Float
+  sportType    String
+  description  String?
+  images       String?
+  ownerId      String
+  active       Boolean    @default(true)
+  isApproved   Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  bookings     Booking[]
+  reviews      Review[]
+  slots        TimeSlot[]
+  owner        User       @relation("OwnerTurfs", fields: [ownerId], references: [id])
+}
+
+model TimeSlot {
+  id        String  @id @default(cuid())
+  turfId    String
+  dayOfWeek Int
+  startTime String
+  endTime   String
+  price     Float?
+  active    Boolean @default(true)
+  turf      Turf    @relation(fields: [turfId], references: [id], onDelete: Cascade)
+}
+
+model Booking {
+  id            String         @id @default(cuid())
+  turfId        String
+  customerId    String
+  date          DateTime
+  startTime     String
+  endTime       String
+  numPlayers    Int
+  totalAmount   Float
+  paymentStatus String         @default("PENDING")
+  paymentMethod String
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  customer      User           @relation(fields: [customerId], references: [id])
+  turf          Turf           @relation(fields: [turfId], references: [id])
+  splits        PaymentSplit[]
+
+  @@unique([turfId, date, startTime])
+}
+
+model PaymentSplit {
+  id        String   @id @default(cuid())
+  bookingId String
+  email     String
+  amount    Float
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  turfId     String
+  customerId String
+  rating     Int
+  comment    String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  turf       Turf     @relation(fields: [turfId], references: [id], onDelete: Cascade)
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  TURF_OWNER
+  CUSTOMER
+}
+
+model PlatformConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
