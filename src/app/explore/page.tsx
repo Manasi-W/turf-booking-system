@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Search, MapPin, Star } from "lucide-react";
 import ExploreFilters from "@/components/explore/ExploreFilters";
 import { Suspense } from "react";
+import TurfMapDisplay from "@/components/turf/TurfMapDisplay";
 
 export default async function ExplorePage({
   searchParams,
@@ -30,10 +31,26 @@ export default async function ExplorePage({
     whereClause.sportType = { equals: sport };
   }
 
+  const view = params.view || "grid";
+
   const turfs = await prisma.turf.findMany({
     where: whereClause,
     include: { owner: true }
-  });
+  }) as any[];
+
+  // Fail-safe for coordinates if Prisma Client is stale
+  if (turfs.length > 0 && turfs.every(t => t.lat === undefined || t.lat === null)) {
+    const rawCoords = await prisma.$queryRaw`SELECT id, lat, lng FROM "Turf"` as any[];
+    const coordMap = new Map(rawCoords.map(c => [c.id, c]));
+    
+    turfs.forEach(t => {
+      const coords = coordMap.get(t.id);
+      if (coords) {
+        t.lat = coords.lat;
+        t.lng = coords.lng;
+      }
+    });
+  }
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -41,57 +58,73 @@ export default async function ExplorePage({
         <ExploreFilters />
       </Suspense>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-        {turfs.map((turf) => (
-          <Link key={turf.id} href={`/turf/${turf.id}`} className="group flex flex-col h-full bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all transition-transform hover:-translate-y-1">
-            <div className="relative aspect-[4/3] overflow-hidden">
-              <img 
-                src={turf.images?.split(',')[0] || "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800&auto=format&fit=crop"} 
-                alt={turf.name} 
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
-              />
-              <div className="absolute top-4 left-4 px-3 py-1 bg-turf-green text-white text-xs font-bold rounded-full shadow-lg">
-                {turf.sportType}
-              </div>
-            </div>
-            <div className="p-6 flex flex-col flex-grow">
-              <div className="flex justify-between items-start mb-2">
-                <h3 className="font-bold text-lg text-turf-dark group-hover:text-turf-green transition-colors">{turf.name}</h3>
-                <div className="flex items-center gap-1 text-sm font-bold text-orange-500">
-                  <Star size={14} className="fill-current" />
-                  <span>4.8</span>
+      {view === "map" ? (
+        <div className="h-[70vh] w-full animate-fade-in">
+          <TurfMapDisplay 
+            turfs={turfs.filter(t => t.lat && t.lng).map(t => ({
+              id: t.id,
+              name: t.name,
+              lat: t.lat!,
+              lng: t.lng!,
+              location: t.location
+            }))} 
+            center={turfs.find(t => t.lat && t.lng) ? [turfs.find(t => t.lat && t.lng)!.lat!, turfs.find(t => t.lat && t.lng)!.lng!] : undefined}
+            zoom={12}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-fade-in">
+          {turfs.map((turf) => (
+            <Link key={turf.id} href={`/turf/${turf.id}`} className="group flex flex-col h-full bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all transition-transform hover:-translate-y-1">
+              <div className="relative aspect-[4/3] overflow-hidden">
+                <img 
+                  src={turf.images?.split(',')[0] || "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800&auto=format&fit=crop"} 
+                  alt={turf.name} 
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                />
+                <div className="absolute top-4 left-4 px-3 py-1 bg-turf-green text-white text-xs font-bold rounded-full shadow-lg">
+                  {turf.sportType}
                 </div>
               </div>
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
-                <MapPin size={14} />
-                <span>{turf.location}</span>
-              </div>
-              <div className="mt-auto flex items-center justify-between border-t pt-4">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-xl font-black text-turf-dark">₹{turf.pricePerHour}</span>
-                  <span className="text-xs text-muted-foreground font-medium">/ hr</span>
+              <div className="p-6 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="font-bold text-lg text-turf-dark group-hover:text-turf-green transition-colors">{turf.name}</h3>
+                  <div className="flex items-center gap-1 text-sm font-bold text-orange-500">
+                    <Star size={14} className="fill-current" />
+                    <span>4.8</span>
+                  </div>
                 </div>
-                <div className="px-4 py-2 bg-turf-green/5 text-turf-green text-xs font-bold rounded-xl group-hover:bg-turf-green group-hover:text-white transition-all">
-                  Book Slot
+                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
+                  <MapPin size={14} />
+                  <span>{turf.location}</span>
+                </div>
+                <div className="mt-auto flex items-center justify-between border-t pt-4">
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-xl font-black text-turf-dark">₹{turf.pricePerHour}</span>
+                    <span className="text-xs text-muted-foreground font-medium">/ hr</span>
+                  </div>
+                  <div className="px-4 py-2 bg-turf-green/5 text-turf-green text-xs font-bold rounded-xl group-hover:bg-turf-green group-hover:text-white transition-all">
+                    Book Slot
+                  </div>
                 </div>
               </div>
-            </div>
-          </Link>
-        ))}
+            </Link>
+          ))}
 
-        {turfs.length === 0 && (
-          <div className="col-span-full py-20 text-center">
-             <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-6">
-               <Search size={40} />
-             </div>
-             <h3 className="text-xl font-bold text-turf-dark mb-2">No turfs found</h3>
-             <p className="text-muted-foreground mb-8">Try adjusting your search or filters.</p>
-             <Link href="/" className="px-8 py-3 bg-turf-green text-white font-bold rounded-2xl shadow-lg shadow-turf-green/20 hover:bg-turf-dark transition-all">
-               Back to Home
-             </Link>
-          </div>
-        )}
-      </div>
+          {turfs.length === 0 && (
+            <div className="col-span-full py-20 text-center">
+               <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-gray-100 text-gray-400 mb-6">
+                 <Search size={40} />
+               </div>
+               <h3 className="text-xl font-bold text-turf-dark mb-2">No turfs found</h3>
+               <p className="text-muted-foreground mb-8">Try adjusting your search or filters.</p>
+               <Link href="/" className="px-8 py-3 bg-turf-green text-white font-bold rounded-2xl shadow-lg shadow-turf-green/20 hover:bg-turf-dark transition-all">
+                 Back to Home
+               </Link>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

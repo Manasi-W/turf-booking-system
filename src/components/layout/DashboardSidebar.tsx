@@ -6,6 +6,7 @@ import {
   LayoutDashboard, 
   MapPin, 
   Calendar, 
+  Clock,
   IndianRupee, 
   Settings, 
   LogOut,
@@ -26,7 +27,8 @@ interface SidebarItem {
 const ownerItems: SidebarItem[] = [
   { name: "Overview", href: "/dashboard/owner", icon: LayoutDashboard },
   { name: "My Turfs", href: "/dashboard/owner/turfs", icon: MapPin },
-  { name: "Bookings", href: "/dashboard/owner/bookings", icon: Calendar },
+  { name: "Schedule", href: "/dashboard/owner/calendar", icon: Calendar },
+  { name: "Bookings", href: "/dashboard/owner/bookings", icon: Clock },
   { name: "Personal Bookings", href: "/dashboard/customer/bookings", icon: User },
   { name: "Revenue", href: "/dashboard/owner/revenue", icon: IndianRupee },
   { name: "Settings", href: "/dashboard/profile", icon: Settings },

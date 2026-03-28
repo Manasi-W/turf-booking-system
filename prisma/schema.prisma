@@ -17,8 +17,9 @@ model User {
   active    Boolean   @default(true)
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  bookings  Booking[]
-  turfs     Turf[]    @relation("OwnerTurfs")
+  bookings      Booking[]
+  turfs         Turf[]         @relation("OwnerTurfs")
+  notifications Notification[]
 }
 
 model Turf {
@@ -29,6 +30,8 @@ model Turf {
   sportType    String
   description  String?
   images       String?
+  lat          Float?
+  lng          Float?
   ownerId      String
   active       Boolean    @default(true)
   isApproved   Boolean    @default(false)
@@ -105,4 +108,17 @@ model PlatformConfig {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, SUCCESS, WARNING, ERROR
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

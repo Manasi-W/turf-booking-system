@@ -1,10 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import { Calendar as CalendarIcon, Clock, CheckCircle2, Loader2, AlertCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSession } from "next-auth/react";
@@ -18,21 +14,76 @@ interface BookingCalendarProps {
 export default function BookingCalendar({ turfId, pricePerHour }: BookingCalendarProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
+  
+  // State for original booking logic
   const [selectedSlot, setSelectedSlot] = useState<{ start: string; end: string } | null>(null);
-  const [bookingStep, setBookingStep] = useState(1); // 1: Select, 2: Payment/Confirm
+  const [bookingStep, setBookingStep] = useState(1); // 1: Select, 2: Payment/Confirm, 3: Success
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isSplit, setIsSplit] = useState(false);
   const [splitEmails, setSplitEmails] = useState<string[]>([""]);
 
-  const handleDateSelect = (selectInfo: any) => {
+  // State for new custom slot picker
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false);
+
+  // Generate next 14 days
+  const dates = Array.from({ length: 14 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() + i);
+    return d;
+  });
+
+  // Time slots categorization
+  const timeCategories = [
+    { label: "Morning", range: [6, 7, 8, 9, 10, 11] },
+    { label: "Afternoon", range: [12, 13, 14, 15, 16] },
+    { label: "Evening", range: [17, 18, 19, 20, 21, 22] }
+  ];
+
+  // Fetch bookings for the selected date
+  React.useEffect(() => {
+    const fetchBookings = async () => {
+      setIsLoadingSlots(true);
+      const start = new Date(selectedDate);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(selectedDate);
+      end.setHours(23, 59, 59, 999);
+
+      try {
+        const res = await fetch(`/api/turfs/${turfId}/bookings?start=${start.toISOString()}&end=${end.toISOString()}`);
+        if (res.ok) {
+          const data = await res.json();
+          setBookedSlots(data.map((b: any) => b.startTime));
+        }
+      } catch (err) {
+        console.error("Failed to fetch slots:", err);
+      } finally {
+        setIsLoadingSlots(false);
+      }
+    };
+
+    fetchBookings();
+  }, [selectedDate, turfId]);
+
+  const handleSlotClick = (hour: number) => {
+    const startWithTime = new Date(selectedDate);
+    startWithTime.setHours(hour, 0, 0, 0);
+
     setSelectedSlot({
-      start: selectInfo.startStr,
-      end: selectInfo.endStr,
+      start: startWithTime.toISOString(),
+      end: new Date(new Date(startWithTime).getTime() + 60 * 60 * 1000).toISOString(),
     });
     setBookingStep(1);
     setError(null);
+  };
+
+  const isSlotSelected = (hour: number) => {
+    if (!selectedSlot) return false;
+    const slotDate = new Date(selectedSlot.start);
+    return slotDate.getHours() === hour && slotDate.toDateString() === selectedDate.toDateString();
   };
 
   const handleConfirmBooking = async (paymentMethod: "ONLINE" | "OFFLINE") => {
@@ -46,12 +97,12 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
     setIsSubmitting(true);
     setError(null);
 
-    const formattedStartTime = selectedSlot.start.includes("T") 
-      ? selectedSlot.start.split("T")[1].substring(0, 5) 
-      : selectedSlot.start;
-    const formattedEndTime = selectedSlot.end.includes("T") 
-      ? selectedSlot.end.split("T")[1].substring(0, 5) 
-      : selectedSlot.end;
+    const bookingDate = new Date(selectedSlot.start);
+    const dateOnly = new Date(selectedSlot.start);
+    dateOnly.setHours(0, 0, 0, 0);
+    
+    const startTime = bookingDate.getHours().toString().padStart(2, '0') + ":00";
+    const endTime = (bookingDate.getHours() + 1).toString().padStart(2, '0') + ":00";
 
     const validSplitEmails = splitEmails.filter(e => e.trim() !== "");
 
@@ -63,9 +114,9 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
         },
         body: JSON.stringify({
           turfId,
-          date: selectedSlot.start,
-          startTime: formattedStartTime,
-          endTime: formattedEndTime,
+          date: dateOnly.toISOString(),
+          startTime,
+          endTime,
           numPlayers: isSplit ? validSplitEmails.length + 1 : 10,
           totalAmount: pricePerHour,
           paymentMethod,
@@ -99,32 +150,102 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
 
   return (
     <div className="space-y-8">
-      <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm overflow-hidden calendar-container">
-        <h3 className="text-lg font-bold text-turf-dark mb-6 flex items-center gap-2">
-          <CalendarIcon size={20} className="text-turf-green" />
+      <div className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm overflow-hidden">
+        <h3 className="text-xl font-black text-turf-dark mb-8 flex items-center gap-3">
+          <CalendarIcon size={24} className="text-turf-green" />
           Select Your Slot
         </h3>
         
-        <FullCalendar
-          plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-          initialView="timeGridDay"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'timeGridDay,timeGridWeek'
-          }}
-          selectable={true}
-          selectMirror={true}
-          dayMaxEvents={true}
-          weekends={true}
-          slotMinTime="06:00:00"
-          slotMaxTime="23:00:00"
-          allDaySlot={false}
-          slotDuration="01:00:00"
-          select={handleDateSelect}
-          height="auto"
-          themeSystem="standard"
-        />
+        {/* Date Selector */}
+        <div className="flex gap-3 overflow-x-auto pb-6 scrollbar-hide -mx-2 px-2 mb-8">
+          {dates.map((date, i) => {
+            const isSelected = date.toDateString() === selectedDate.toDateString();
+            return (
+              <button
+                key={i}
+                onClick={() => { setSelectedDate(date); setSelectedSlot(null); }}
+                className={cn(
+                  "flex-shrink-0 w-20 py-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-1",
+                  isSelected 
+                    ? "bg-turf-green border-turf-green text-white shadow-lg shadow-turf-green/20" 
+                    : "bg-white border-gray-100 text-gray-400 hover:border-turf-green/30 hover:text-turf-dark"
+                )}
+              >
+                <span className="text-[10px] font-black uppercase tracking-widest opacity-80">
+                  {date.toLocaleDateString('en-US', { weekday: 'short' })}
+                </span>
+                <span className="text-xl font-black">
+                  {date.getDate()}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Time Grid Categories */}
+        <div className="space-y-10">
+          {isLoadingSlots ? (
+            <div className="h-64 flex flex-col items-center justify-center gap-4 text-muted-foreground italic">
+              <Loader2 className="animate-spin text-turf-green" size={32} />
+              <p>Fetching available slots...</p>
+            </div>
+          ) : (
+            timeCategories.map((category, idx) => (
+              <div key={idx}>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="h-px flex-grow bg-gray-100"></div>
+                  <span className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground px-4">
+                    {category.label}
+                  </span>
+                  <div className="h-px flex-grow bg-gray-100"></div>
+                </div>
+                
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+                  {category.range.map((hour) => {
+                    const timeStr = `${hour.toString().padStart(2, '0')}:00`;
+                    const isBooked = bookedSlots.includes(timeStr);
+                    const isSelected = isSlotSelected(hour);
+                    const hour12 = hour > 12 ? hour - 12 : (hour === 0 ? 12 : hour);
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+
+                    return (
+                      <button
+                        key={hour}
+                        disabled={isBooked}
+                        onClick={() => handleSlotClick(hour)}
+                        className={cn(
+                          "py-4 rounded-2xl border-2 font-bold transition-all text-sm",
+                          isSelected
+                            ? "bg-turf-dark border-turf-dark text-white shadow-lg"
+                            : isBooked
+                              ? "bg-gray-50 border-gray-50 text-gray-300 cursor-not-allowed line-through"
+                              : "bg-white border-gray-100 text-turf-dark hover:border-turf-green hover:bg-turf-green/5"
+                        )}
+                      >
+                        {hour12} {ampm}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="mt-10 pt-8 border-t border-gray-50 flex flex-wrap gap-6 justify-center">
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <div className="w-3 h-3 rounded-full border-2 border-gray-100"></div>
+                <span>Available</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <div className="w-3 h-3 rounded-full bg-turf-dark"></div>
+                <span>Selected</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs font-bold text-muted-foreground">
+                <div className="w-3 h-3 rounded-full bg-gray-100"></div>
+                <span className="line-through">Booked</span>
+            </div>
+        </div>
       </div>
 
       {error && (

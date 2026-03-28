@@ -18,7 +18,7 @@ export default function HeroSearch() {
   };
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 w-full max-w-lg mb-12">
+    <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4 w-full max-w-2xl mx-auto mb-12">
       <div className="flex-grow relative">
         <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={20} />
         <input

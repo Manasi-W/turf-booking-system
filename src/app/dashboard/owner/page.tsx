@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import RevenueChart from "../../dashboard/admin/RevenueChart"; // Reusing the same chart component
 
 export default async function OwnerDashboardPage() {
@@ -18,6 +19,10 @@ export default async function OwnerDashboardPage() {
   const totalBookings = turfs.reduce((acc, t) => acc + t.bookings.length, 0);
   const paidBookings = turfs.flatMap(t => t.bookings).filter(b => b.paymentStatus === "PAID");
   const totalRevenue = paidBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+
+  const manageSlotsHref = turfs.length === 1
+    ? `/dashboard/owner/turfs/edit/${turfs[0].id}`
+    : "/dashboard/owner/turfs";
 
   const stats = [
     { label: "Total Revenue", value: `₹${totalRevenue.toLocaleString()}`, icon: IndianRupee, color: "bg-turf-green", text: "text-white" },
@@ -85,9 +90,11 @@ export default async function OwnerDashboardPage() {
               </div>
             </div>
           </div>
-          <button className="w-full py-5 bg-white text-turf-dark font-black rounded-2xl hover:bg-turf-lime transition-all transform hover:-translate-y-1 mt-8">
-            Manage Time Slots
-          </button>
+          <Link href={manageSlotsHref} className="block mt-8">
+            <button className="w-full py-5 bg-white text-turf-dark font-black rounded-2xl hover:bg-turf-lime transition-all transform hover:-translate-y-1">
+              Manage Time Slots
+            </button>
+          </Link>
         </div>
       </div>
 

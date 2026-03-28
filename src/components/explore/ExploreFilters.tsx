@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Filter, MapPin, X } from "lucide-react";
+import { Search, Filter, MapPin, X, LayoutGrid, Map as MapIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 export default function ExploreFilters() {
@@ -9,6 +9,7 @@ export default function ExploreFilters() {
   const searchParams = useSearchParams();
   
   const [isOpen, setIsOpen] = useState(false);
+  const [view, setView] = useState(searchParams.get("view") || "grid");
   
   const [search, setSearch] = useState(searchParams.get("q") || "");
   const [location, setLocation] = useState(searchParams.get("loc") || "");
@@ -16,19 +17,26 @@ export default function ExploreFilters() {
   const [sportType, setSportType] = useState(searchParams.get("sport") || "");
 
   // Update URL on form submit
-  const applyFilters = (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    
+  const applyFilters = (newView?: string) => {
     const params = new URLSearchParams();
     if (search) params.set("q", search);
     if (location) params.set("loc", location);
     if (maxPrice) params.set("price", maxPrice);
     if (sportType) params.set("sport", sportType);
     
+    // Use the provided newView or the current view state
+    const currentView = newView || view;
+    if (currentView !== "grid") params.set("view", currentView);
+    
     router.push(`/explore?${params.toString()}`);
     setIsOpen(false);
   };
   
+  const handleToggleView = (v: string) => {
+    setView(v);
+    applyFilters(v);
+  };
+
   // Apply search on Enter key or button click
   const handleSearchKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
@@ -41,6 +49,7 @@ export default function ExploreFilters() {
     setLocation("");
     setMaxPrice("");
     setSportType("");
+    setView("grid");
     router.push('/explore');
     setIsOpen(false);
   };
@@ -56,6 +65,24 @@ export default function ExploreFilters() {
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto">
+          {/* View Toggle */}
+          <div className="flex items-center bg-gray-100 p-1 rounded-2xl border border-gray-200">
+            <button 
+              onClick={() => handleToggleView("grid")}
+              className={`p-2 rounded-xl transition-all ${view === 'grid' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
+              title="Grid View"
+            >
+              <LayoutGrid size={20} />
+            </button>
+            <button 
+              onClick={() => handleToggleView("map")}
+              className={`p-2 rounded-xl transition-all ${view === 'map' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
+              title="Map View"
+            >
+              <MapIcon size={20} />
+            </button>
+          </div>
+
           <div className="relative flex-grow md:w-80">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
             <input 
@@ -93,7 +120,10 @@ export default function ExploreFilters() {
             </button>
           </div>
           
-          <form onSubmit={applyFilters} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <form 
+            onSubmit={(e) => { e.preventDefault(); applyFilters(); }} 
+            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+          >
             <div className="space-y-2">
               <label className="text-sm font-bold text-turf-dark block">Location</label>
               <div className="relative">

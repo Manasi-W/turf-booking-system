@@ -6,43 +6,51 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-white py-20 sm:py-32 hero-gradient">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <section className="relative min-h-[85vh] flex items-center overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2000&auto=format&fit=crop" 
+            alt="Sports Turf" 
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-turf-dark/80 via-turf-dark/60 to-turf-dark/90"></div>
+        </div>
+
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20">
           <div className="flex flex-col items-center text-center max-w-4xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-turf-green/10 text-turf-green text-sm font-semibold mb-8 animate-fade-in">
+            <div className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/10 backdrop-blur-md text-turf-lime text-sm font-bold mb-8 border border-white/10 animate-fade-in shadow-xl">
               <Star size={16} className="fill-current" />
-              <span>Rated #1 Platform for Sports Bookings</span>
+              <span className="uppercase tracking-widest">Rated #1 Platform for Sports Bookings</span>
             </div>
-            <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-turf-dark mb-6 leading-[1.1]">
+            <h1 className="text-5xl sm:text-8xl font-black tracking-tight text-white mb-8 leading-[1]">
               Your Game Begins <br />
               <span className="text-turf-green">With a Perfect Slot.</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-10 max-w-2xl leading-relaxed">
+            <p className="text-xl text-white/70 mb-12 max-w-2xl leading-relaxed">
               Discover premium sports turfs nearby, check real-time availability, and book your next match in seconds. No more phone calls, just play.
             </p>
             
-            <HeroSearch />
+            <div className="w-full max-w-2xl mx-auto mb-12">
+              <HeroSearch />
+            </div>
 
-            <div className="flex items-center gap-8 text-sm font-medium text-muted-foreground">
-              <div className="flex items-center gap-2">
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm font-bold text-white/50">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
                 <div className="h-2 w-2 rounded-full bg-turf-green"></div>
-                <span>500+ Turfs</span>
+                <span>500+ TURFS</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
                 <div className="h-2 w-2 rounded-full bg-turf-green"></div>
-                <span>10k+ Players</span>
+                <span>10K+ PLAYERS</span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-4 py-2 bg-white/5 rounded-2xl border border-white/5">
                 <div className="h-2 w-2 rounded-full bg-turf-green"></div>
-                <span>24/7 Support</span>
+                <span>24/7 SUPPORT</span>
               </div>
             </div>
           </div>
         </div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-1/4 -left-20 w-64 h-64 bg-turf-green/5 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 -right-20 w-80 h-80 bg-turf-lime/10 rounded-full blur-3xl"></div>
       </section>
 
       {/* Feature Section */}

@@ -8,29 +8,38 @@ export default function TurfInteractionButtons({ turfName }: { turfName: string 
   const [isSaved, setIsSaved] = useState(false);
   const [showCopied, setShowCopied] = useState(false);
 
+  const [isSharing, setIsSharing] = useState(false);
+
   const handleShare = async () => {
+    if (isSharing) return;
+    setIsSharing(true);
+
     const shareData = {
       title: turfName,
       text: `Check out this turf: ${turfName}`,
       url: window.location.href,
     };
 
-    if (typeof navigator !== "undefined" && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-      try {
-        await navigator.share(shareData);
-        return;
-      } catch (err) {
-        console.error("Error sharing", err);
-      }
-    }
-    
-    // Fallback: Copy to clipboard
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      setShowCopied(true);
-      setTimeout(() => setShowCopied(false), 2000);
+      if (typeof navigator !== "undefined" && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
+        await navigator.share(shareData);
+      } else {
+        throw new Error("Sharing not supported");
+      }
     } catch (err) {
-      console.error("Failed to copy", err);
+      if (err instanceof Error && err.name !== "AbortError") {
+        console.error("Error sharing", err);
+        // Fallback: Copy to clipboard
+        try {
+          await navigator.clipboard.writeText(window.location.href);
+          setShowCopied(true);
+          setTimeout(() => setShowCopied(false), 2000);
+        } catch (clipErr) {
+          console.error("Failed to copy", clipErr);
+        }
+      }
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -42,10 +51,11 @@ export default function TurfInteractionButtons({ turfName }: { turfName: string 
     <div className="flex items-center gap-3 relative">
       <button 
         onClick={handleShare}
-        className="p-3 border rounded-2xl hover:bg-gray-50 transition-all text-turf-dark flex items-center gap-2 font-bold text-sm bg-white"
+        disabled={isSharing}
+        className="p-3 border rounded-2xl hover:bg-gray-50 transition-all text-turf-dark flex items-center gap-2 font-bold text-sm bg-white disabled:opacity-50"
       >
         <Share2 size={18} className="text-turf-green" /> 
-        {showCopied ? "Link Copied!" : "share"}
+        {showCopied ? "Link Copied!" : isSharing ? "Sharing..." : "share"}
       </button>
       <button 
         onClick={handleSave}

@@ -29,7 +29,7 @@ export default function TurfGallery({ images, alt }: TurfGalleryProps) {
   return (
     <div className="space-y-4">
       {/* Main Feature Image */}
-      <div className="relative aspect-video rounded-[2.5rem] overflow-hidden group shadow-2xl shadow-turf-green/10 border-4 border-white">
+      <div className="relative aspect-video rounded-3xl overflow-hidden group shadow-xl border border-gray-100">
         <img 
           src={galleryImages[activeImageIndex]} 
           alt={alt} 
@@ -69,7 +69,7 @@ export default function TurfGallery({ images, alt }: TurfGalleryProps) {
           <button 
             key={idx}
             onClick={() => setActiveImageIndex(idx)}
-            className={`relative aspect-square rounded-2xl overflow-hidden border-4 transition-all ${
+            className={`relative aspect-square rounded-2xl overflow-hidden border-2 transition-all ${
               activeImageIndex === idx ? "border-turf-green scale-95 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"
             }`}
           >

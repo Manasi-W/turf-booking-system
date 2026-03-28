@@ -38,8 +38,10 @@ export default function SlotManager({ turfId }: { turfId: string }) {
     setLoading(true);
     try {
       const res = await fetch(`/api/turfs/${turfId}/slots`);
-      const data = await res.json();
-      if (res.ok) setSlots(data);
+      if (res.ok) {
+        const data = await res.json();
+        setSlots(data);
+      }
     } catch (err) {
       console.error("Failed to fetch slots", err);
     } finally {
@@ -50,8 +52,10 @@ export default function SlotManager({ turfId }: { turfId: string }) {
   async function fetchTurfStatus() {
     try {
       const res = await fetch(`/api/turfs/${turfId}`);
-      const data = await res.json();
-      if (res.ok) setIsTurfActive(data.active);
+      if (res.ok) {
+        const data = await res.json();
+        setIsTurfActive(data.active);
+      }
     } catch (err) {
       console.error("Failed to fetch turf status", err);
     }

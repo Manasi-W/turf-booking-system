@@ -6,6 +6,7 @@ import CostSplitter from "@/components/booking/CostSplitter";
 import ReviewSection from "@/components/turf/ReviewSection";
 import TurfGallery from "@/components/turf/TurfGallery";
 import TurfInteractionButtons from "@/components/turf/TurfInteractionButtons";
+import TurfMapDisplay from "@/components/turf/TurfMapDisplay";
 
 interface TurfPageProps {
   params: Promise<{ id: string }>;
@@ -19,7 +20,16 @@ export default async function TurfDetailPage({ params }: TurfPageProps) {
       owner: true,
       reviews: true 
     }
-  });
+  }) as any;
+
+  // Fail-safe for coordinates if Prisma Client is stale
+  if (turf && (turf.lat === undefined || turf.lat === null)) {
+    const rawCoords = await prisma.$queryRaw`SELECT lat, lng FROM "Turf" WHERE id = ${id} LIMIT 1` as any[];
+    if (rawCoords && rawCoords[0]) {
+      turf.lat = rawCoords[0].lat;
+      turf.lng = rawCoords[0].lng;
+    }
+  }
 
   if (!turf) {
     notFound();
@@ -93,6 +103,27 @@ export default async function TurfDetailPage({ params }: TurfPageProps) {
                     <span className="font-medium text-sm text-turf-dark">{item.label}</span>
                   </div>
                 ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 className="text-2xl font-bold text-turf-dark mb-6">Location</h2>
+              <div className="h-96 w-full relative">
+                {turf.lat && turf.lng ? (
+                  <TurfMapDisplay 
+                    turfs={[{
+                      id: turf.id,
+                      name: turf.name,
+                      lat: turf.lat,
+                      lng: turf.lng,
+                      location: turf.location
+                    }]} 
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gray-100 rounded-3xl flex items-center justify-center border border-dashed border-gray-300">
+                    <p className="text-muted-foreground italic">Location map not available for this turf</p>
+                  </div>
+                )}
               </div>
             </section>
 

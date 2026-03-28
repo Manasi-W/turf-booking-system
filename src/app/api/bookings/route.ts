@@ -32,8 +32,30 @@ export async function POST(req: Request) {
     } = validatedData;
     
     const bookingDate = new Date(date);
+    const dayOfWeek = bookingDate.getDay(); // 0 is Sunday, 1 is Monday...
 
-    // Basic double booking prevention
+    // 1. Strict Slot Validation (Check if the turf is "open" at this time)
+    const availableSlots = await prisma.timeSlot.findMany({
+      where: {
+        turfId,
+        dayOfWeek,
+        active: true,
+      },
+    });
+
+    const isSlotAvailable = availableSlots.some(slot => {
+      // Basic string comparison works for "HH:mm" format
+      return startTime >= slot.startTime && endTime <= slot.endTime;
+    });
+
+    if (!isSlotAvailable) {
+      return NextResponse.json(
+        { error: "This turf is not available for the selected time range" },
+        { status: 400 }
+      );
+    }
+
+    // 2. Basic double booking prevention (Check if someone else already booked it)
     const existingBooking = await prisma.booking.findFirst({
       where: {
         turfId,
@@ -102,6 +124,44 @@ export async function POST(req: Request) {
           time: `${startTime} - ${endTime}`,
           amount: splitAmount,
         });
+      }
+    }
+
+    // Send Notification to Customer - Fail-safe for stale Prisma Client
+    const notificationData = {
+      userId: session.user.id,
+      title: "Booking Confirmed!",
+      message: `Your booking at ${turf?.name} on ${bookingDate.toLocaleDateString()} for ${startTime}-${endTime} is confirmed.`,
+      type: "SUCCESS",
+      link: "/dashboard/customer/bookings"
+    };
+
+    if ((prisma as any).notification) {
+      await (prisma as any).notification.create({ data: notificationData }).catch(e => console.error("Customer Notification Error:", e));
+    } else {
+      await prisma.$executeRaw`
+        INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "isRead", "link", "createdAt", "updatedAt")
+        VALUES (gen_random_uuid()::text, ${notificationData.userId}, ${notificationData.title}, ${notificationData.message}, ${notificationData.type}, false, ${notificationData.link}, now(), now())
+      `.catch(e => console.error("Customer Raw Notification Error:", e));
+    }
+
+    // Send Notification to Owner
+    if (turf?.ownerId) {
+      const ownerNoteData = {
+        userId: turf.ownerId,
+        title: "New Booking Received",
+        message: `${session.user.name} has booked your turf ${turf.name} for ${bookingDate.toLocaleDateString()} at ${startTime}.`,
+        type: "INFO",
+        link: "/dashboard/owner/calendar"
+      };
+
+      if ((prisma as any).notification) {
+        await (prisma as any).notification.create({ data: ownerNoteData }).catch(e => console.error("Owner Notification Error:", e));
+      } else {
+        await prisma.$executeRaw`
+          INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "isRead", "link", "createdAt", "updatedAt")
+          VALUES (gen_random_uuid()::text, ${ownerNoteData.userId}, ${ownerNoteData.title}, ${ownerNoteData.message}, ${ownerNoteData.type}, false, ${ownerNoteData.link}, now(), now())
+        `.catch(e => console.error("Owner Raw Notification Error:", e));
       }
     }
 
