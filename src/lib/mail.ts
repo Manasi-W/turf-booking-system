@@ -65,3 +65,24 @@ export async function sendSplitInvitationEmail(email: string, details: {
     console.error("Email Error (Invitation):", error);
   }
 }
+export async function sendBookingReminderEmail(email: string, details: {
+  turfName: string;
+  time: string;
+}) {
+  if (!resend) return;
+  try {
+    await resend.emails.send({
+      from: "Turfivo <onboarding@resend.dev>",
+      to: email,
+      subject: `Reminder: Your game at ${details.turfName} starts soon!`,
+      html: `
+        <h1>Don't Be Late!</h1>
+        <p>Your booking at <strong>${details.turfName}</strong> starts in about 2 hours at <strong>${details.time}</strong>.</p>
+        <p>Grab your gear and get ready!</p>
+        <a href="${process.env.NEXTAUTH_URL}/dashboard/customer/bookings">View Booking Details</a>
+      `,
+    });
+  } catch (error) {
+    console.error("Email Error (Reminder):", error);
+  }
+}

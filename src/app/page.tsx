@@ -1,8 +1,14 @@
 import Link from "next/link";
 import { Search, MapPin, Calendar, Users, Star, ArrowRight, Shield, Zap, TrendingUp } from "lucide-react";
 import HeroSearch from "@/components/home/HeroSearch";
+import prisma from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const featuredTurfs = await prisma.turf.findMany({
+    where: { isFeatured: true, isApproved: true, active: true },
+    take: 3,
+    include: { reviews: true }
+  });
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
@@ -105,58 +111,54 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Arena One Sports",
-                loc: "Andheri East, Mumbai",
-                price: "₹1,200",
-                img: "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800&auto=format&fit=crop",
-                rating: 4.8
-              },
-              {
-                name: "The Greenfield Complex",
-                loc: "HSR Layout, Bangalore",
-                price: "₹1,500",
-                img: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=800&auto=format&fit=crop",
-                rating: 4.9
-              },
-              {
-                name: "Kick-Off Sports Center",
-                loc: "Anna Nagar, Chennai",
-                price: "₹1,000",
-                img: "https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=800&auto=format&fit=crop",
-                rating: 4.7
-              }
-            ].map((turf, i) => (
-              <div key={i} className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-all h-[400px] flex flex-col">
-                <div className="relative h-48 overflow-hidden">
-                  <img src={turf.img} alt={turf.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                  <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-turf-dark flex items-center gap-1">
-                    <Star size={12} className="text-orange-400 fill-current" />
-                    {turf.rating}
-                  </div>
-                </div>
-                <div className="p-6 flex flex-col flex-grow">
-                  <h3 className="text-xl font-bold text-turf-dark mb-1">{turf.name}</h3>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
-                    <MapPin size={14} />
-                    {turf.loc}
-                  </div>
-                  <div className="mt-auto flex items-center justify-between">
-                    <div>
-                      <span className="text-2xl font-black text-turf-green">{turf.price}</span>
-                      <span className="text-xs text-muted-foreground"> / hour</span>
+            {featuredTurfs.map((turf) => {
+              const reviewCount = turf.reviews.length;
+              const averageRating = reviewCount > 0 
+                ? turf.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount 
+                : 4.8; // Fallback rating
+              const images = turf.images?.split(',') || [];
+
+              return (
+                <div key={turf.id} className="group overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm hover:shadow-xl transition-all h-[400px] flex flex-col">
+                  <div className="relative h-48 overflow-hidden">
+                    <img 
+                      src={images[0] || "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800&auto=format&fit=crop"} 
+                      alt={turf.name} 
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+                    />
+                    <div className="absolute top-4 right-4 px-3 py-1 bg-white/90 backdrop-blur rounded-full text-xs font-bold text-turf-dark flex items-center gap-1">
+                      <Star size={12} className="text-orange-400 fill-current" />
+                      {averageRating.toFixed(1)}
                     </div>
-                    <Link 
-                      href="/explore"
-                      className="px-4 py-2 border border-turf-green text-turf-green text-sm font-bold rounded-xl hover:bg-turf-green hover:text-white transition-all text-center"
-                    >
-                      Book Now
-                    </Link>
+                  </div>
+                  <div className="p-6 flex flex-col flex-grow">
+                    <h3 className="text-xl font-bold text-turf-dark mb-1">{turf.name}</h3>
+                    <div className="flex items-center gap-1 text-sm text-muted-foreground mb-4">
+                      <MapPin size={14} />
+                      {turf.location}
+                    </div>
+                    <div className="mt-auto flex items-center justify-between">
+                      <div>
+                        <span className="text-2xl font-black text-turf-green">₹{turf.pricePerHour}</span>
+                        <span className="text-xs text-muted-foreground"> / hour</span>
+                      </div>
+                      <Link 
+                        href={`/turf/${turf.id}`}
+                        className="px-4 py-2 border border-turf-green text-turf-green text-sm font-bold rounded-xl hover:bg-turf-green hover:text-white transition-all text-center"
+                      >
+                        Book Now
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+            
+            {featuredTurfs.length === 0 && (
+                <div className="col-span-full py-20 text-center bg-gray-50 rounded-[3rem] border border-dashed border-gray-100">
+                    <p className="text-muted-foreground font-medium italic">New top-rated turfs are coming soon!</p>
+                </div>
+            )}
           </div>
         </div>
       </section>

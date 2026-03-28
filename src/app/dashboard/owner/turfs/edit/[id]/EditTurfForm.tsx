@@ -19,6 +19,7 @@ export default function EditTurfForm({ turf }: { turf: Turf }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
   const [images, setImages] = useState<string[]>(
     turf.images ? turf.images.split(',') : []
   );
@@ -60,8 +61,9 @@ export default function EditTurfForm({ turf }: { turf: Turf }) {
 
       if (!res.ok) throw new Error("Failed to update turf");
 
+      setSuccess(true);
+      setTimeout(() => setSuccess(false), 3000);
       router.refresh();
-      // Show success somehow? Maybe just relying on refresh for now.
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -74,6 +76,12 @@ export default function EditTurfForm({ turf }: { turf: Turf }) {
       {error && (
         <div className="p-4 bg-red-50 border border-red-100 text-red-600 rounded-2xl text-sm font-bold">
           {error}
+        </div>
+      )}
+
+      {success && (
+        <div className="p-4 bg-green-50 border border-green-100 text-green-700 rounded-2xl text-sm font-bold">
+          Turf information updated successfully!
         </div>
       )}
 

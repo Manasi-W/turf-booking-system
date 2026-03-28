@@ -15,6 +15,8 @@ interface TurfMapDisplayProps {
     lat: number;
     lng: number;
     location: string;
+    pricePerHour: number;
+    images?: string[];
   }[];
   center?: [number, number];
   zoom?: number;

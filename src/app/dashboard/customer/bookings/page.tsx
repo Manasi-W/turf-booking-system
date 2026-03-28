@@ -2,15 +2,17 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 import { redirect } from "next/navigation";
-import { Calendar, Clock, MapPin, AlertCircle, Info, ArrowRight, User } from "lucide-react";
+import { Calendar, Clock, MapPin, AlertCircle, Info, ArrowRight, User, FileText } from "lucide-react";
 import Link from "next/link";
 import CancelBookingButton from "@/components/booking/CancelBookingButton";
+import RateTurfButton from "@/components/reviews/RateTurfButton";
 import BookingFilter from "@/components/dashboard/BookingFilter";
+import BookingReceipt from "@/components/booking/BookingReceipt";
 
 export default async function CustomerBookingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; receiptId?: string }>;
 }) {
   const session = await auth();
 
@@ -20,6 +22,7 @@ export default async function CustomerBookingsPage({
 
   const resolvedSearchParams = await searchParams;
   const statusFilter = resolvedSearchParams.status || "all";
+  const receiptId = resolvedSearchParams.receiptId;
   const userId = (session.user as any).id;
 
   const bookings = await prisma.booking.findMany({
@@ -148,6 +151,17 @@ export default async function CustomerBookingsPage({
                     {!isCancelled && new Date(booking.date) >= now && (
                       <CancelBookingButton bookingId={booking.id} bookingStartTime={bookingStartTime} />
                     )}
+                    {booking.paymentStatus === "PAID" && (
+                        <Link 
+                            href={`/dashboard/customer/bookings?receiptId=${booking.id}${statusFilter !== 'all' ? `&status=${statusFilter}` : ''}`}
+                            className="flex items-center gap-2 px-4 py-2 border border-gray-200 text-muted-foreground hover:text-turf-dark hover:border-turf-dark text-xs font-bold rounded-xl transition-all"
+                        >
+                            <FileText size={14} /> Receipt
+                        </Link>
+                    )}
+                    {booking.paymentStatus === "PAID" && bookingStartTime < now && (
+                        <RateTurfButton turfId={booking.turfId} turfName={booking.turf.name} />
+                    )}
                   </div>
                 </div>
 
@@ -201,6 +215,20 @@ export default async function CustomerBookingsPage({
           </button>
         </div>
       </div>
+
+      {receiptId && (
+        (() => {
+          const receiptBooking = bookings.find(b => b.id === receiptId);
+          if (!receiptBooking) return null;
+          const receiptData = { ...receiptBooking, customer: session.user };
+          return (
+            <BookingReceipt 
+                booking={receiptData} 
+                onClose={`/dashboard/customer/bookings${statusFilter !== 'all' ? `?status=${statusFilter}` : ''}`} 
+            />
+          );
+        })()
+      )}
     </div>
   );
 }

@@ -54,10 +54,10 @@ export default async function AdminDashboardPage({
   });
 
   const stats = [
-    { label: "Platform Revenue", value: `₹${(totalRevenue._sum.totalAmount || 0).toLocaleString()}`, icon: IndianRupee, color: "bg-turf-green" },
-    { label: periodLabel, value: `₹${(periodRevenue._sum.totalAmount || 0).toLocaleString()}`, icon: BarChart3, color: "bg-turf-dark" },
-    { label: "Total Bookings", value: totalBookings, icon: Globe, color: "bg-turf-dark" },
-    { label: "Active Turfs", value: totalTurfs, icon: MapPin, color: "bg-turf-dark" },
+    { label: "Platform Revenue", value: `₹${(totalRevenue._sum.totalAmount || 0).toLocaleString()}`, icon: IndianRupee, color: "bg-turf-green", href: "/dashboard/admin" },
+    { label: periodLabel, value: `₹${(periodRevenue._sum.totalAmount || 0).toLocaleString()}`, icon: BarChart3, color: "bg-turf-dark", href: "/dashboard/admin" },
+    { label: "Total Bookings", value: totalBookings, icon: Globe, color: "bg-turf-dark", href: "/dashboard/admin/bookings" },
+    { label: "Active Turfs", value: totalTurfs, icon: MapPin, color: "bg-turf-dark", href: "/dashboard/admin/turfs" },
   ];
 
   return (
@@ -72,15 +72,15 @@ export default async function AdminDashboardPage({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {stats.map((stat, i) => (
-          <div key={i} className="p-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-44 hover:shadow-lg transition-all">
-            <div className={cn("p-3 rounded-2xl self-start text-white shadow-lg", stat.color)}>
+          <Link key={i} href={stat.href} className="p-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm flex flex-col justify-between h-44 hover:shadow-lg transition-all group">
+            <div className={cn("p-3 rounded-2xl self-start text-white shadow-lg transition-transform group-hover:scale-110", stat.color)}>
               <stat.icon size={24} />
             </div>
             <div>
               <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mb-1">{stat.label}</p>
               <p className="text-3xl font-black text-turf-dark">{stat.value}</p>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
@@ -120,12 +120,21 @@ export default async function AdminDashboardPage({
         </div>
 
         <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm flex flex-col">
-          <div className="flex justify-between items-center mb-8">
-            <h3 className="text-2xl font-black text-turf-dark flex items-center gap-3">
-              <BarChart3 className="text-turf-green" size={28} />
-              Revenue Analytics
-            </h3>
-            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{periodLabel}</p>
+          <div className="flex justify-between items-start mb-8">
+            <div>
+              <h3 className="text-2xl font-black text-turf-dark flex items-center gap-3">
+                <BarChart3 className="text-turf-green" size={28} />
+                Revenue Analytics
+              </h3>
+              <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest mt-1">{periodLabel}</p>
+            </div>
+            <a 
+              href="/api/admin/export/revenue" 
+              className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-black transition-all shadow-lg shadow-gray-200"
+              download
+            >
+              Export CSV
+            </a>
           </div>
 
           <div className="flex-1 min-h-[300px]">

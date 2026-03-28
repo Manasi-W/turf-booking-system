@@ -50,12 +50,15 @@ export default async function OwnerBookingsPage({
 
   return (
     <div className="max-w-6xl mx-auto">
-      <div className="flex justify-between items-end mb-10">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10">
         <div>
           <h1 className="text-3xl font-black text-turf-dark mb-1">Booking Requests</h1>
           <p className="text-muted-foreground text-sm font-medium">Keep track of all upcoming and past matches.</p>
         </div>
-        <BookingFilter currentFilter={statusFilter} />
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto items-center">
+            <BookingSearch />
+            <BookingFilter currentFilter={statusFilter} />
+        </div>
       </div>
 
       <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm overflow-hidden">

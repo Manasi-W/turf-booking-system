@@ -43,9 +43,10 @@ const customerItems: SidebarItem[] = [
 const adminItems: SidebarItem[] = [
   { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
   { name: "Users", href: "/dashboard/admin/users", icon: User },
+  { name: "Turfs", href: "/dashboard/admin/turfs", icon: MapPin },
   { name: "Bookings", href: "/dashboard/admin/bookings", icon: Calendar },
-  { name: "Personal Bookings", href: "/dashboard/customer/bookings", icon: User },
-  { name: "Config", href: "/dashboard/admin/config", icon: Settings },
+  { name: "Personal Bookings", href: "/dashboard/customer/bookings", icon: Clock },
+  { name: "Settings", href: "/dashboard/admin/settings", icon: Settings },
 ];
 
 export default function DashboardSidebar() {

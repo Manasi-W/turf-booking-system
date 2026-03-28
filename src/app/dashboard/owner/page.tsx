@@ -6,13 +6,42 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import RevenueChart from "../../dashboard/admin/RevenueChart"; // Reusing the same chart component
 
-export default async function OwnerDashboardPage() {
+export default async function OwnerDashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ start?: string; end?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
 
+  const resolvedParams = await searchParams;
+  const startDateStr = resolvedParams.start;
+  const endDateStr = resolvedParams.end;
+
+  const whereClause: any = { ownerId: session.user.id };
+  if (startDateStr && endDateStr) {
+    whereClause.bookings = {
+      some: {
+        date: {
+          gte: new Date(startDateStr),
+          lte: new Date(endDateStr),
+        }
+      }
+    };
+  }
+
   const turfs = await prisma.turf.findMany({
     where: { ownerId: session.user.id },
-    include: { bookings: true }
+    include: { 
+      bookings: {
+        where: startDateStr && endDateStr ? {
+          date: {
+            gte: new Date(startDateStr),
+            lte: new Date(endDateStr),
+          }
+        } : {}
+      } 
+    }
   });
 
   const totalTurfs = turfs.length;
@@ -38,9 +67,40 @@ export default async function OwnerDashboardPage() {
           <h1 className="text-4xl font-black text-turf-dark mb-2">Owner Dashboard</h1>
           <p className="text-muted-foreground font-medium">Manage your turfs and track performance.</p>
         </div>
-        <div className="flex gap-4">
-          {/* Quick actions could go here */}
-        </div>
+        <form className="flex flex-wrap items-end gap-4 w-full md:w-auto">
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-black uppercase text-muted-foreground ml-2">From</span>
+            <input 
+              name="start" 
+              type="date" 
+              defaultValue={startDateStr}
+              className="px-4 py-2 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-turf-green/20 text-xs font-bold"
+            />
+          </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-[10px] font-black uppercase text-muted-foreground ml-2">To</span>
+            <input 
+              name="end" 
+              type="date" 
+              defaultValue={endDateStr}
+              className="px-4 py-2 rounded-xl border border-gray-100 focus:outline-none focus:ring-2 focus:ring-turf-green/20 text-xs font-bold"
+            />
+          </div>
+          <button 
+            type="submit"
+            className="px-6 py-2.5 bg-turf-dark text-white text-xs font-bold rounded-xl hover:bg-black transition-all"
+          >
+            Filter
+          </button>
+          {(startDateStr || endDateStr) && (
+            <Link 
+              href="/dashboard/owner"
+              className="px-4 py-2.5 bg-gray-100 text-muted-foreground text-xs font-bold rounded-xl hover:bg-gray-200 transition-all"
+            >
+                Clear
+            </Link>
+          )}
+        </form>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
@@ -101,7 +161,7 @@ export default async function OwnerDashboardPage() {
       <div className="bg-white rounded-[3rem] p-10 border border-gray-100 shadow-sm mb-12">
         <div className="flex justify-between items-center mb-10">
           <h3 className="text-2xl font-black text-turf-dark">Recent Activity</h3>
-          <button className="text-sm font-bold text-turf-green hover:underline">View All Bookings</button>
+          <Link href="/dashboard/owner/bookings" className="text-sm font-bold text-turf-green hover:underline">View All Bookings</Link>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

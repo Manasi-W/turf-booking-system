@@ -14,6 +14,8 @@ const bookingSchema = z.object({
   paymentMethod: z.enum(["ONLINE", "OFFLINE"]),
   isSplit: z.boolean().optional(),
   splitEmails: z.array(z.string().email()).optional(),
+  promoCode: z.string().nullable().optional(),
+  discountAmount: z.number().optional(),
 });
 
 export async function POST(req: Request) {
@@ -28,8 +30,30 @@ export async function POST(req: Request) {
 
     const { 
       turfId, date, startTime, endTime, numPlayers, totalAmount, 
-      paymentMethod, isSplit, splitEmails 
+      paymentMethod, isSplit, splitEmails, promoCode, discountAmount
     } = validatedData;
+
+    // Server-side promo validation
+    if (promoCode) {
+      const promo = await prisma.promoCode.findUnique({ where: { code: promoCode.toUpperCase() } });
+      if (!promo || !promo.isActive || new Date(promo.expiryDate) < new Date()) {
+        return NextResponse.json({ error: "Invalid or expired promo code" }, { status: 400 });
+      }
+      // Re-calculate discount to prevent client-side tampering
+      let calculatedDiscount = (totalAmount / (1 - (promo.discountPercent/100))) * (promo.discountPercent/100); 
+      // This is tricky because totalAmount from client is already discounted.
+      // Let's assume client sends the ORIGINAL amount or we fetch it.
+      // Actually, better: client sends original amount as totalAmount and we subtract discount.
+      // Wait, my BookingCalendar sends totalAmount: pricePerHour - promoDiscount.
+      // So original is totalAmount + discountAmount.
+      const originalAmount = totalAmount + (discountAmount || 0);
+      let serverDiscount = (originalAmount * promo.discountPercent) / 100;
+      if (promo.maxDiscount && serverDiscount > promo.maxDiscount) serverDiscount = promo.maxDiscount;
+
+      if (Math.abs(serverDiscount - (discountAmount || 0)) > 1) { // 1 rupee tolerance
+         return NextResponse.json({ error: "Promo discount mismatch" }, { status: 400 });
+      }
+    }
     
     const bookingDate = new Date(date);
     const dayOfWeek = bookingDate.getDay(); // 0 is Sunday, 1 is Monday...
@@ -83,8 +107,17 @@ export async function POST(req: Request) {
           totalAmount,
           paymentMethod,
           paymentStatus: paymentMethod === "ONLINE" ? "PAID" : "PENDING",
+          promoCode,
+          discountAmount: discountAmount || 0,
         },
       });
+
+      if (promoCode) {
+        await tx.promoCode.update({
+          where: { code: promoCode },
+          data: { usageCount: { increment: 1 } }
+        });
+      }
 
       if (isSplit && splitEmails && splitEmails.length > 0) {
         const splitAmount = totalAmount / (splitEmails.length + 1); // +1 for the creator

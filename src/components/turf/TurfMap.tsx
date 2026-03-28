@@ -20,6 +20,8 @@ interface TurfMapProps {
     lat: number;
     lng: number;
     location: string;
+    pricePerHour: number;
+    images?: string[];
   }[];
   center?: [number, number];
   zoom?: number;
@@ -63,10 +65,30 @@ export default function TurfMap({ turfs, center, zoom = 13 }: TurfMapProps) {
             position={[turf.lat, turf.lng]}
             icon={icon}
           >
-            <Popup>
-              <div className="p-1">
-                <h4 className="font-bold text-turf-dark m-0">{turf.name}</h4>
-                <p className="text-xs text-muted-foreground m-0 mt-1">{turf.location}</p>
+            <Popup className="turf-popup">
+              <div className="w-56 overflow-hidden rounded-2xl bg-white">
+                <div className="relative h-24 w-full">
+                  <img 
+                    src={turf.images?.[0] || "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=400"} 
+                    alt={turf.name}
+                    className="h-full w-full object-cover"
+                  />
+                  <div className="absolute top-2 right-2 px-2 py-0.5 bg-white/90 backdrop-blur rounded-full text-[10px] font-black text-turf-green">
+                    ₹{turf.pricePerHour}
+                  </div>
+                </div>
+                <div className="p-3">
+                  <h4 className="font-bold text-turf-dark text-sm mb-0.5 leading-tight">{turf.name}</h4>
+                  <p className="text-[10px] text-muted-foreground flex items-center gap-1 mb-3">
+                    <span className="shrink-0 text-turf-green leading-none">📍</span> {turf.location.split(',')[0]}
+                  </p>
+                  <a 
+                    href={`/turf/${turf.id}`}
+                    className="block w-full py-2 bg-turf-dark text-white text-[10px] font-bold rounded-lg text-center hover:bg-black transition-all"
+                  >
+                    View Details & Book
+                  </a>
+                </div>
               </div>
             </Popup>
           </Marker>

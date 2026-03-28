@@ -116,7 +116,9 @@ export default async function TurfDetailPage({ params }: TurfPageProps) {
                       name: turf.name,
                       lat: turf.lat,
                       lng: turf.lng,
-                      location: turf.location
+                      location: turf.location,
+                      pricePerHour: turf.pricePerHour,
+                      images: turf.images?.split(',') || []
                     }]} 
                   />
                 ) : (

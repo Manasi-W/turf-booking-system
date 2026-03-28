@@ -23,6 +23,11 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
   const [success, setSuccess] = useState(false);
   const [isSplit, setIsSplit] = useState(false);
   const [splitEmails, setSplitEmails] = useState<string[]>([""]);
+  const [numPlayers, setNumPlayers] = useState(10);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoDiscount, setPromoDiscount] = useState(0);
+  const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
 
   // State for new custom slot picker
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -117,11 +122,13 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
           date: dateOnly.toISOString(),
           startTime,
           endTime,
-          numPlayers: isSplit ? validSplitEmails.length + 1 : 10,
-          totalAmount: pricePerHour,
+          numPlayers: isSplit ? validSplitEmails.length + 1 : numPlayers,
+          totalAmount: pricePerHour - promoDiscount,
           paymentMethod,
           isSplit,
           splitEmails: isSplit ? validSplitEmails : [],
+          promoCode: promoDiscount > 0 ? promoCode.toUpperCase() : null,
+          discountAmount: promoDiscount,
         }),
       });
 
@@ -138,6 +145,27 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
       setBookingStep(1);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCode.trim()) return;
+    setIsApplyingPromo(true);
+    setPromoError(null);
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode, amount: pricePerHour }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Invalid code");
+      setPromoDiscount(data.discountAmount);
+    } catch (err: any) {
+      setPromoError(err.message);
+      setPromoDiscount(0);
+    } finally {
+      setIsApplyingPromo(false);
     }
   };
 
@@ -300,6 +328,56 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
                     <div className="flex items-center gap-3">
                         <Users className="text-turf-green" size={20} />
                         <div>
+                            <p className="font-bold text-turf-dark">Number of Players</p>
+                            <p className="text-xs text-muted-foreground">Specify total participants</p>
+                        </div>
+                    </div>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="22"
+                      value={numPlayers}
+                      onChange={(e) => setNumPlayers(parseInt(e.target.value))}
+                      className="w-16 px-2 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-turf-green/20 outline-none font-bold text-center"
+                    />
+                 </div>
+
+                  <div className="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div className="flex items-center gap-3 mb-4">
+                        <CalendarIcon className="text-turf-green" size={20} />
+                        <div>
+                            <p className="font-bold text-turf-dark">Promo Code</p>
+                            <p className="text-xs text-muted-foreground">Apply a discount coupon</p>
+                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            placeholder="Enter Code (e.g. TURF10)"
+                            value={promoCode}
+                            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                            className="flex-grow px-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-turf-green/20 outline-none text-sm font-bold"
+                        />
+                        <button 
+                            onClick={handleApplyPromo}
+                            disabled={isApplyingPromo || !promoCode}
+                            className="px-4 py-2 bg-turf-dark text-white text-xs font-bold rounded-xl hover:bg-black transition-all disabled:opacity-50"
+                        >
+                            {isApplyingPromo ? <Loader2 className="animate-spin" size={16} /> : "Apply"}
+                        </button>
+                    </div>
+                    {promoError && <p className="text-[10px] text-red-500 font-bold mt-2 ml-1">{promoError}</p>}
+                    {promoDiscount > 0 && (
+                        <p className="text-[10px] text-turf-green font-bold mt-2 ml-1 flex items-center gap-1">
+                            <CheckCircle2 size={12} /> Discount of ₹{promoDiscount} applied!
+                        </p>
+                    )}
+                  </div>
+
+                  <div className="flex items-center justify-between p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div className="flex items-center gap-3">
+                        <Users className="text-turf-green" size={20} />
+                        <div>
                             <p className="font-bold text-turf-dark">Split Cost with Friends</p>
                             <p className="text-xs text-muted-foreground">Invite friends to share the price</p>
                         </div>
@@ -347,8 +425,12 @@ export default function BookingCalendar({ turfId, pricePerHour }: BookingCalenda
                       className="flex flex-col items-center justify-center p-6 border-2 border-turf-green bg-turf-green/5 rounded-2xl hover:bg-turf-green/10 transition-all disabled:opacity-50 group"
                     >
                         <span className="text-2xl mb-2 group-hover:scale-110 transition-transform">💳</span>
-                        <p className="font-bold text-turf-dark text-sm">Online</p>
-                        {isSubmitting && <Loader2 className="animate-spin text-turf-green mt-2" size={16} />}
+                    <p className="font-bold text-turf-dark text-sm">Online</p>
+                    <div className="flex items-baseline gap-1">
+                        {promoDiscount > 0 && <span className="text-[10px] text-muted-foreground line-through">₹{pricePerHour}</span>}
+                        <span className="text-lg font-black text-turf-green">₹{pricePerHour - promoDiscount}</span>
+                    </div>
+                    {isSubmitting && <Loader2 className="animate-spin text-turf-green mt-2" size={16} />}
                     </button>
 
                     <button 

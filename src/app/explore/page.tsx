@@ -66,7 +66,9 @@ export default async function ExplorePage({
               name: t.name,
               lat: t.lat!,
               lng: t.lng!,
-              location: t.location
+              location: t.location,
+              pricePerHour: t.pricePerHour,
+              images: t.images?.split(',') || []
             }))} 
             center={turfs.find(t => t.lat && t.lng) ? [turfs.find(t => t.lat && t.lng)!.lat!, turfs.find(t => t.lat && t.lng)!.lng!] : undefined}
             zoom={12}
