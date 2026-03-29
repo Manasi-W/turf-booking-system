@@ -74,6 +74,9 @@ model Booking {
   turf          Turf           @relation(fields: [turfId], references: [id])
   splits        PaymentSplit[]
 
+  discoverySource String?
+  reminderSent   Boolean        @default(false)
+
   @@unique([turfId, date, startTime])
 }
 

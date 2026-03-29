@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { MapPin, ShieldAlert, CheckCircle2, XCircle, Search } from "lucide-react";
 import StatusToggle from "./StatusToggle";
+import FeaturedToggle from "./FeaturedToggle";
 import Link from "next/link";
 
 export default async function AdminTurfsPage({

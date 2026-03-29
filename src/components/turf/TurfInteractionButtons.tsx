@@ -48,11 +48,11 @@ export default function TurfInteractionButtons({ turfName }: { turfName: string 
   };
 
   return (
-    <div className="flex items-center gap-3 relative">
+    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative w-full sm:w-auto">
       <button 
         onClick={handleShare}
         disabled={isSharing}
-        className="p-3 border rounded-2xl hover:bg-gray-50 transition-all text-turf-dark flex items-center gap-2 font-bold text-sm bg-white disabled:opacity-50"
+        className="p-3 border rounded-2xl hover:bg-gray-50 transition-all text-turf-dark flex items-center justify-center gap-2 font-bold text-sm bg-white disabled:opacity-50 w-full sm:w-auto"
       >
         <Share2 size={18} className="text-turf-green" /> 
         {showCopied ? "Link Copied!" : isSharing ? "Sharing..." : "share"}
@@ -60,7 +60,7 @@ export default function TurfInteractionButtons({ turfName }: { turfName: string 
       <button 
         onClick={handleSave}
         className={cn(
-          "p-3 border rounded-2xl transition-all flex items-center gap-2 font-bold text-sm bg-white",
+          "p-3 border rounded-2xl transition-all flex items-center justify-center gap-2 font-bold text-sm bg-white w-full sm:w-auto",
           isSaved ? "text-red-500 border-red-200 bg-red-50" : "text-turf-dark hover:bg-gray-50"
         )}
       >

@@ -17,11 +17,11 @@ export default function UserMenu() {
 
   return (
     <div className="relative group">
-      <button className="flex items-center gap-2 p-1 pr-4 bg-gray-100 rounded-full hover:bg-gray-200 transition-all border border-transparent hover:border-gray-200">
+      <button className="flex items-center gap-2 p-1 sm:pr-4 bg-gray-100 rounded-full hover:bg-gray-200 transition-all border border-transparent hover:border-gray-200">
         <div className="h-8 w-8 rounded-full bg-turf-green text-white flex items-center justify-center font-bold text-sm">
           {session.user.name?.charAt(0)}
         </div>
-        <span className="text-sm font-bold text-turf-dark">{session.user.name?.split(' ')[0]}</span>
+        <span className="text-sm font-bold text-turf-dark hidden sm:inline">{session.user.name?.split(' ')[0]}</span>
       </button>
 
       <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all py-2 z-[60]">

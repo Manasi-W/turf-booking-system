@@ -75,37 +75,37 @@ export default async function ExplorePage({
           />
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 animate-fade-in">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 animate-fade-in px-2 sm:px-0">
           {turfs.map((turf) => (
-            <Link key={turf.id} href={`/turf/${turf.id}`} className="group flex flex-col h-full bg-white border border-gray-100 rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all transition-transform hover:-translate-y-1">
+            <Link key={turf.id} href={`/turf/${turf.id}`} className="group flex flex-col h-full bg-white border border-gray-100 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all transition-transform hover:-translate-y-1">
               <div className="relative aspect-[4/3] overflow-hidden">
                 <img 
                   src={turf.images?.split(',')[0] || "https://images.unsplash.com/photo-1551958219-acbc608c6377?q=80&w=800&auto=format&fit=crop"} 
                   alt={turf.name} 
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
                 />
-                <div className="absolute top-4 left-4 px-3 py-1 bg-turf-green text-white text-xs font-bold rounded-full shadow-lg">
+                <div className="absolute top-4 left-4 px-3 py-1 bg-turf-green text-white text-[10px] sm:text-xs font-bold rounded-full shadow-lg">
                   {turf.sportType}
                 </div>
               </div>
-              <div className="p-6 flex flex-col flex-grow">
-                <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-bold text-lg text-turf-dark group-hover:text-turf-green transition-colors">{turf.name}</h3>
-                  <div className="flex items-center gap-1 text-sm font-bold text-orange-500">
+              <div className="p-5 sm:p-6 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2 gap-2">
+                  <h3 className="font-bold text-base sm:text-lg text-turf-dark group-hover:text-turf-green transition-colors line-clamp-1">{turf.name}</h3>
+                  <div className="flex items-center gap-1 text-xs sm:text-sm font-bold text-orange-500 shrink-0">
                     <Star size={14} className="fill-current" />
                     <span>4.8</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-6">
-                  <MapPin size={14} />
-                  <span>{turf.location}</span>
+                <div className="flex items-center gap-1.5 text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
+                  <MapPin size={14} className="shrink-0" />
+                  <span className="line-clamp-1">{turf.location}</span>
                 </div>
                 <div className="mt-auto flex items-center justify-between border-t pt-4">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-black text-turf-dark">₹{turf.pricePerHour}</span>
-                    <span className="text-xs text-muted-foreground font-medium">/ hr</span>
+                    <span className="text-lg sm:text-xl font-black text-turf-dark">₹{turf.pricePerHour}</span>
+                    <span className="text-[10px] sm:text-xs text-muted-foreground font-medium">/ hr</span>
                   </div>
-                  <div className="px-4 py-2 bg-turf-green/5 text-turf-green text-xs font-bold rounded-xl group-hover:bg-turf-green group-hover:text-white transition-all">
+                  <div className="px-3 sm:px-4 py-1.5 sm:py-2 bg-turf-green/5 text-turf-green text-[10px] sm:text-xs font-bold rounded-xl group-hover:bg-turf-green group-hover:text-white transition-all">
                     Book Slot
                   </div>
                 </div>
