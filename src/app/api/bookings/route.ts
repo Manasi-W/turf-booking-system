@@ -170,12 +170,12 @@ export async function POST(req: Request) {
     };
 
     if ((prisma as any).notification) {
-      await (prisma as any).notification.create({ data: notificationData }).catch(e => console.error("Customer Notification Error:", e));
+      await (prisma as any).notification.create({ data: notificationData }).catch((e: any) => console.error("Customer Notification Error:", e));
     } else {
       await prisma.$executeRaw`
         INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "isRead", "link", "createdAt", "updatedAt")
         VALUES (gen_random_uuid()::text, ${notificationData.userId}, ${notificationData.title}, ${notificationData.message}, ${notificationData.type}, false, ${notificationData.link}, now(), now())
-      `.catch(e => console.error("Customer Raw Notification Error:", e));
+      `.catch((e: any) => console.error("Customer Raw Notification Error:", e));
     }
 
     // Send Notification to Owner
@@ -189,12 +189,12 @@ export async function POST(req: Request) {
       };
 
       if ((prisma as any).notification) {
-        await (prisma as any).notification.create({ data: ownerNoteData }).catch(e => console.error("Owner Notification Error:", e));
+        await (prisma as any).notification.create({ data: ownerNoteData }).catch((e: any) => console.error("Owner Notification Error:", e));
       } else {
         await prisma.$executeRaw`
           INSERT INTO "Notification" ("id", "userId", "title", "message", "type", "isRead", "link", "createdAt", "updatedAt")
           VALUES (gen_random_uuid()::text, ${ownerNoteData.userId}, ${ownerNoteData.title}, ${ownerNoteData.message}, ${ownerNoteData.type}, false, ${ownerNoteData.link}, now(), now())
-        `.catch(e => console.error("Owner Raw Notification Error:", e));
+        `.catch((e: any) => console.error("Owner Raw Notification Error:", e));
       }
     }
 
