@@ -44,7 +44,7 @@ export async function GET(req: Request) {
         const date = subDays(new Date(), i);
         const dayAmount = bookings
           .filter(b => format(new Date(b.createdAt), "yyyy-MM-dd") === format(date, "yyyy-MM-dd"))
-          .reduce((sum, b) => sum + b.totalAmount, 0);
+          .reduce((sum: number, b: any) => sum + b.totalAmount, 0);
 
         return {
           date: format(date, "MMM dd"),
@@ -62,7 +62,7 @@ export async function GET(req: Request) {
             const bDate = new Date(b.createdAt);
             return bDate >= monthStart && bDate <= monthEnd;
           })
-          .reduce((sum, b) => sum + b.totalAmount, 0);
+          .reduce((sum: number, b: any) => sum + b.totalAmount, 0);
 
         return {
           date: format(date, "MMM yyyy"),

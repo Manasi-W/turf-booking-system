@@ -11,7 +11,7 @@ export default async function AdminSettingsPage() {
   const configs = await prisma.platformConfig.findMany();
   
   // Transform to a key-value map for easier form handling
-  const configMap = configs.reduce((acc, c) => ({ ...acc, [c.key]: c.value }), {} as any);
+  const configMap = configs.reduce((acc: any, c: any) => ({ ...acc, [c.key]: c.value }), {} as any);
 
   // Default values if not set
   const defaults = {

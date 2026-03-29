@@ -28,7 +28,7 @@ export default async function OwnerRevenuePage({
   });
 
   const allPaidBookings = turfs.flatMap(t => t.bookings);
-  const totalLifetimeRevenue = allPaidBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+  const totalLifetimeRevenue = allPaidBookings.reduce((sum: number, b: any) => sum + b.totalAmount, 0);
   
   // Dynamic stats based on period
   let periodDate = new Date();
@@ -46,7 +46,7 @@ export default async function OwnerRevenuePage({
 
   const periodRevenue = allPaidBookings
     .filter(b => new Date(b.createdAt) >= periodDate)
-    .reduce((sum, b) => sum + b.totalAmount, 0);
+    .reduce((sum: number, b: any) => sum + b.totalAmount, 0);
 
   return (
     <div className="max-w-6xl mx-auto space-y-10 pb-20">
@@ -128,7 +128,7 @@ export default async function OwnerRevenuePage({
             </thead>
             <tbody className="divide-y divide-gray-50">
                {turfs.map((turf) => {
-                  const turfEarnings = turf.bookings.reduce((sum, b) => sum + b.totalAmount, 0);
+                  const turfEarnings = turf.bookings.reduce((sum: number, b: any) => sum + b.totalAmount, 0);
                   return (
                      <tr key={turf.id} className="group hover:bg-gray-50/50 transition-all">
                         <td className="px-8 py-6">

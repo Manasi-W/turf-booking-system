@@ -45,9 +45,9 @@ export default async function OwnerDashboardPage({
   });
 
   const totalTurfs = turfs.length;
-  const totalBookings = turfs.reduce((acc, t) => acc + t.bookings.length, 0);
+  const totalBookings = turfs.reduce((acc: number, t: any) => acc + t.bookings.length, 0);
   const paidBookings = turfs.flatMap(t => t.bookings).filter(b => b.paymentStatus === "PAID");
-  const totalRevenue = paidBookings.reduce((sum, b) => sum + b.totalAmount, 0);
+  const totalRevenue = paidBookings.reduce((sum: number, b: any) => sum + b.totalAmount, 0);
 
   const manageSlotsHref = turfs.length === 1
     ? `/dashboard/owner/turfs/edit/${turfs[0].id}`

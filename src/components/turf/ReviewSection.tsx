@@ -72,7 +72,7 @@ export default function ReviewSection({ turfId }: { turfId: string }) {
   }
 
   const averageRating = reviews.length > 0 
-    ? reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length 
+    ? reviews.reduce((acc: number, r: Review) => acc + r.rating, 0) / reviews.length 
     : 0;
 
   return (

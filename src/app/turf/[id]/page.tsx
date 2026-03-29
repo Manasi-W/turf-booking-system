@@ -37,7 +37,7 @@ export default async function TurfDetailPage({ params }: TurfPageProps) {
 
   const reviewCount = turf.reviews.length;
   const averageRating = reviewCount > 0 
-    ? turf.reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviewCount 
+    ? turf.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount 
     : 0;
 
   const images = turf.images?.split(',') || [
