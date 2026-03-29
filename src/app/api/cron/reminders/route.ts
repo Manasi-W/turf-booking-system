@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import prisma from "@/lib/prisma";
 import { sendBookingReminderEmail } from "@/lib/mail";
 import { sendBookingReminderSMS } from "@/lib/sms";
 import { addHours, format, isAfter, isBefore, parseISO, startOfDay } from "date-fns";
