@@ -57,7 +57,7 @@ export default async function CustomerBookingsPage({
           <h1 className="text-4xl font-black text-turf-dark mb-2">My Bookings</h1>
           <p className="text-muted-foreground font-medium">Manage your personal turf reservations and history.</p>
         </div>
-        <BookingFilter currentStatus={statusFilter} />
+        <BookingFilter currentFilter={statusFilter} />
       </div>
 
       <div className="space-y-8">
