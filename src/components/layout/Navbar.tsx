@@ -130,6 +130,30 @@ export default function Navbar() {
                   {link.label}
                 </Link>
               ))}
+
+              {session && (
+                <>
+                  <div className="h-px bg-gray-100 my-2" />
+                  <Link 
+                    href={
+                      (session.user as any).role === "SUPER_ADMIN" ? "/dashboard/admin" : 
+                      (session.user as any).role === "TURF_OWNER" ? "/dashboard/owner" : 
+                      "/dashboard/customer"
+                    }
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center p-4 rounded-2xl bg-turf-green/5 text-base font-bold text-turf-green hover:bg-turf-green/10 transition-all"
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    href="/dashboard/profile"
+                    onClick={() => setIsMenuOpen(false)}
+                    className="flex items-center p-4 rounded-2xl bg-gray-50 text-base font-bold text-turf-dark hover:bg-turf-green/5 hover:text-turf-green transition-all"
+                  >
+                    My Profile
+                  </Link>
+                </>
+              )}
             </div>
           </div>
 
