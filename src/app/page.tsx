@@ -4,11 +4,17 @@ import HeroSearch from "@/components/home/HeroSearch";
 import prisma from "@/lib/prisma";
 
 export default async function Home() {
-  const featuredTurfs = await prisma.turf.findMany({
-    where: { isFeatured: true, isApproved: true, active: true },
-    take: 3,
-    include: { reviews: true }
-  });
+  let featuredTurfs: any[] = [];
+  try {
+    featuredTurfs = await prisma.turf.findMany({
+      where: { isFeatured: true, isApproved: true, active: true },
+      take: 3,
+      include: { reviews: true }
+    });
+  } catch (error) {
+    console.error("Error fetching featured turfs:", error);
+    featuredTurfs = [];
+  }
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}

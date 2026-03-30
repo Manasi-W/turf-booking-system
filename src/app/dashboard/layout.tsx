@@ -1,4 +1,4 @@
-import DashboardSidebar from "@/components/layout/DashboardSidebar";
+import DashboardLayoutWrapper from "@/components/dashboard/DashboardLayoutWrapper";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -14,11 +14,8 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="flex bg-gray-50 min-h-screen">
-      <DashboardSidebar />
-      <main className="flex-1 p-10 overflow-x-hidden">
-        {children}
-      </main>
-    </div>
+    <DashboardLayoutWrapper>
+      {children}
+    </DashboardLayoutWrapper>
   );
 }

@@ -1,33 +1,28 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function checkUsers() {
-  console.log("--- Checking Users in Database ---");
-  const users = await prisma.user.findMany({
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      password: true,
-      name: true
-    }
-  });
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        email: true,
+        name: true,
+        role: true,
+      }
+    });
 
-  console.log(`Total users found: ${users.length}`);
-  
-  for (const user of users) {
-    const isBcrypt = user.password.startsWith("$2a$") || user.password.startsWith("$2b$") || user.password.startsWith("$2y$") || user.password.startsWith("$2");
-    console.log(`User: ${user.email} | Role: ${user.role} | Name: ${user.name} | Password starts with valid hash marker: ${isBcrypt}`);
-    
-    // Test a common password if you want, but better just check hash format
-    if (user.password.length < 20) {
-        console.warn(`WARNING: Password hash for ${user.email} looks too short: ${user.password}`);
+    console.log("\x1b[32m%s\x1b[0m", "\n--- Users found in Database ---");
+    if (users.length === 0) {
+      console.log("\x1b[31m%s\x1b[0m", "No users found! Your database is completely empty.");
+    } else {
+      console.table(users);
     }
+  } catch (error) {
+    console.error("\x1b[31m%s\x1b[0m", "Error connecting to database:", error);
+  } finally {
+    await prisma.$disconnect();
   }
 }
 
-checkUsers()
-  .catch(e => console.error(e))
-  .finally(async () => await prisma.$disconnect());
+checkUsers();

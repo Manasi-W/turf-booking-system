@@ -11,7 +11,8 @@ import {
   Settings, 
   LogOut,
   ChevronRight,
-  User
+  User,
+  X
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOut } from "next-auth/react";
@@ -22,6 +23,11 @@ interface SidebarItem {
   name: string;
   href: string;
   icon: any;
+}
+
+interface DashboardSidebarProps {
+  onClose?: () => void;
+  className?: string;
 }
 
 const ownerItems: SidebarItem[] = [
@@ -49,7 +55,7 @@ const adminItems: SidebarItem[] = [
   { name: "Settings", href: "/dashboard/admin/settings", icon: Settings },
 ];
 
-export default function DashboardSidebar() {
+export default function DashboardSidebar({ onClose, className }: DashboardSidebarProps) {
   const pathname = usePathname();
   const { data: session } = useSession();
   
@@ -59,16 +65,26 @@ export default function DashboardSidebar() {
                 customerItems;
 
   return (
-    <aside className="w-80 border-r bg-white h-screen flex flex-col sticky top-0 overflow-y-auto z-40">
+    <aside className={cn("w-full lg:w-80 border-r bg-white h-full flex flex-col overflow-y-auto relative z-40", className)}>
       <div className="p-8">
-        <Link href="/" className="flex items-center gap-2 mb-10">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-turf-green text-white shadow-lg shadow-turf-green/20">
-            <User size={24} />
-          </div>
-          <span className="text-xl font-bold text-turf-dark">
-            Turf<span className="text-turf-green">ivo</span>
-          </span>
-        </Link>
+        <div className="flex justify-between items-center mb-10">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-turf-green text-white shadow-lg shadow-turf-green/20">
+              <User size={24} />
+            </div>
+            <span className="text-xl font-bold text-turf-dark">
+              Turf<span className="text-turf-green">ivo</span>
+            </span>
+          </Link>
+          {onClose && (
+            <button 
+              onClick={onClose}
+              className="lg:hidden p-2 text-muted-foreground hover:bg-gray-100 rounded-lg"
+            >
+              <X size={20} />
+            </button>
+          )}
+        </div>
 
         <nav className="space-y-1">
           {items.map((item) => {

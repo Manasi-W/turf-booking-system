@@ -58,52 +58,54 @@ export default function ExploreFilters() {
 
   return (
     <>
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-12">
         <div>
           <h1 className="text-4xl font-black text-turf-dark mb-2">Explore Turfs</h1>
           <p className="text-muted-foreground">Find the perfect spot for your next match.</p>
         </div>
         
-        <div className="flex items-center gap-3 w-full md:w-auto">
-          {/* View Toggle */}
-          <div className="flex items-center bg-gray-100 p-1 rounded-2xl border border-gray-200">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
+          {/* View Toggle - Small Screens: Full width or centered */}
+          <div className="flex items-center justify-center bg-gray-100 p-1 rounded-2xl border border-gray-200">
             <button 
               onClick={() => handleToggleView("grid")}
-              className={`p-2 rounded-xl transition-all ${view === 'grid' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all ${view === 'grid' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
               title="Grid View"
             >
-              <LayoutGrid size={20} />
+              <LayoutGrid size={20} className="mx-auto" />
             </button>
             <button 
               onClick={() => handleToggleView("map")}
-              className={`p-2 rounded-xl transition-all ${view === 'map' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
+              className={`flex-1 sm:flex-none px-4 py-2 rounded-xl transition-all ${view === 'map' ? 'bg-white text-turf-green shadow-sm' : 'text-muted-foreground hover:text-turf-dark'}`}
               title="Map View"
             >
-              <MapIcon size={20} />
+              <MapIcon size={20} className="mx-auto" />
             </button>
           </div>
 
-          <div className="relative flex-grow md:w-80">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
-            <input 
-              type="text" 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              onKeyDown={handleSearchKeyPress}
-              placeholder="Search by name..." 
-              className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-turf-green/20 focus:border-turf-green transition-all"
-            />
+          <div className="flex gap-2 flex-grow">
+            <div className="relative flex-grow lg:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+              <input 
+                type="text" 
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                onKeyDown={handleSearchKeyPress}
+                placeholder="Search..." 
+                className="w-full pl-11 pr-4 py-3 rounded-2xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-turf-green/20 focus:border-turf-green transition-all"
+              />
+            </div>
+            <button 
+              onClick={() => setIsOpen(!isOpen)}
+              className={`px-4 sm:p-3 border rounded-2xl transition-all flex items-center justify-center gap-2 ${isOpen || hasActiveFilters ? 'bg-turf-green text-white border-turf-green shadow-lg shadow-turf-green/20' : 'bg-white border-gray-200 text-turf-dark hover:bg-gray-50'}`}
+            >
+              <Filter size={20} />
+              <span className="sm:hidden font-bold">Filters</span>
+              {hasActiveFilters && (
+                <span className="w-2 h-2 rounded-full bg-orange-500 hidden sm:block"></span>
+              )}
+            </button>
           </div>
-          <button 
-            onClick={() => setIsOpen(!isOpen)}
-            className={`p-3 border rounded-2xl transition-all flex items-center gap-2 ${isOpen || hasActiveFilters ? 'bg-turf-green text-white border-turf-green shadow-lg shadow-turf-green/20' : 'bg-white border-gray-200 text-turf-dark hover:bg-gray-50'}`}
-          >
-            <Filter size={20} />
-            <span className="md:hidden font-bold">Filters</span>
-            {hasActiveFilters && (
-               <span className="w-2 h-2 rounded-full bg-orange-500 absolute top-2 right-2 md:relative md:top-auto md:right-auto"></span>
-            )}
-          </button>
         </div>
       </div>
 

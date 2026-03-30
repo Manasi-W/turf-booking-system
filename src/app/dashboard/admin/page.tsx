@@ -95,19 +95,21 @@ export default async function AdminDashboardPage({
           <div className="space-y-4">
             {pendingTurfs.length > 0 ? (
               pendingTurfs.map((turf) => (
-                <div key={turf.id} className="flex items-center justify-between p-5 bg-gray-50 rounded-[2rem] border border-gray-100 group hover:border-turf-green/30 transition-all">
-                  <div className="flex items-center gap-4">
-                    <div className="h-12 w-12 rounded-2xl overflow-hidden bg-white shadow-sm">
+                <div key={turf.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-5 bg-gray-50 rounded-[2rem] border border-gray-100 group hover:border-turf-green/30 transition-all gap-4">
+                  <div className="flex items-center gap-4 w-full sm:w-auto">
+                    <div className="h-12 w-12 rounded-2xl overflow-hidden bg-white shadow-sm shrink-0">
                       <img src={turf.images?.split(',')[0]} className="h-full w-full object-cover" />
                     </div>
-                    <div>
-                      <p className="font-bold text-turf-dark">{turf.name}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest flex items-center gap-1">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-turf-dark truncate">{turf.name}</p>
+                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest flex items-center gap-1 truncate">
                         By {turf.owner.name} • <MapPin size={10} /> {turf.location.split(',')[0]}
                       </p>
                     </div>
                   </div>
-                  <ApprovalActions turfId={turf.id} />
+                  <div className="w-full sm:w-auto flex justify-end">
+                    <ApprovalActions turfId={turf.id} />
+                  </div>
                 </div>
               ))
             ) : (
