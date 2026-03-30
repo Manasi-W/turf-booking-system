@@ -31,9 +31,9 @@ To explore the platform's features across different roles, use the following pre
 
 | Role | Email | Password |
 | :--- | :--- | :--- |
-| **Super Admin** | `admin@turf.com` | `password123` |
-| **Turf Owner** | `owner@turf.com` | `password123` |
-| **Customer** | `customer@turf.com` | `password123` |
+| **Super Admin** | `admin@turf.com` | `Admin123!` |
+| **Turf Owner** | `owner@example.com` | `password123` |
+| **Customer** | `customer@example.com` | `password123` |
 
 ---
 
